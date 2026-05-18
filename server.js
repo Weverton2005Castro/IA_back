@@ -7,7 +7,7 @@ dotenv.config();
 
 const app = express();
 const port = process.env.PORT || 5001;
-const host = process.env.HOST || '127.0.0.1';
+const host = '0.0.0.0';
 
 app.use(cors({
     origin: '*',
