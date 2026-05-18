@@ -12,7 +12,7 @@ const host = '0.0.0.0';
 app.use(cors({
     origin: [
         'http://localhost:5173',
-        'https://assistant-chat-pi.vercel.app/'
+        'https://assistant-chat-pi.vercel.app'
     ],
     methods: ['GET', 'POST'],
     allowedHeaders: ['Content-Type'],
