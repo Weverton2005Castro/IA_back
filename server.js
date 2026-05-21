@@ -10,27 +10,17 @@ const port = process.env.PORT || 5001;
 const host = '0.0.0.0';
 
 app.use(cors({
-    origin: [
-        'http://localhost:5173',
-        'https://assistant-chat-pi.vercel.app'
-    ],
+    origin: ['http://localhost:5173'],
     methods: ['GET', 'POST'],
     allowedHeaders: ['Content-Type'],
 }));
 
-
 app.use(express.json());
 
-
 const openai = new OpenAI({
-
-    baseURL:
-        'https://openrouter.ai/api/v1',
-
     apiKey:
         process.env.OPENROUTER_API_KEY,
 });
-
 
 app.get('/health', (req, res) => {
     res.json({
@@ -39,11 +29,8 @@ app.get('/health', (req, res) => {
 });
 
 app.post('/chat', async (req, res) => {
-
     try {
-
         const { message } = req.body;
-
         console.log(
             'Mensagem recebida:',
             message
@@ -51,10 +38,8 @@ app.post('/chat', async (req, res) => {
 
         const completion =
             await openai.chat.completions.create({
-
                 model:
                     'openai/gpt-3.5-turbo',
-
                 messages: [
                     {
                         role: 'user',
@@ -66,28 +51,23 @@ app.post('/chat', async (req, res) => {
         console.log(
             completion
         );
-
         res.json({
             response:
                 completion
                     .choices[0]
                     .message.content,
         });
-
     } catch (error) {
-
         console.log(
             'ERRO COMPLETO:',
             error
         );
-
         res.status(500).json({
             error:
                 'Erro ao consultar a IA',
         });
     }
 });
-
 
 const server = app.listen(port, host, () => {
     console.log(
