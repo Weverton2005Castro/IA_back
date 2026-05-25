@@ -9,8 +9,24 @@ const app = express();
 const port = process.env.PORT || 5001;
 const host = '0.0.0.0';
 
+const allowedOrigins = [
+    'http://localhost:5173',
+    process.env.CLIENT_URL,
+]
+    .filter(Boolean)
+    .map((origin) =>
+        origin.replace(/\/$/, '')
+    );
+
 app.use(cors({
-    origin: ['http://localhost:5173', 'https://ia-front-one.vercel.app/'], //esse origin ai vai ser a url do projeto na vercel
+    origin(origin, callback) {
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+            return;
+        }
+
+        callback(new Error('Origin not allowed by CORS'));
+    },
     methods: ['GET', 'POST'],
     allowedHeaders: ['Content-Type'],
 }));
