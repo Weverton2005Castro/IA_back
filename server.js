@@ -9,6 +9,13 @@ const app = express();
 const port = process.env.PORT || 5001;
 const host = '0.0.0.0';
 
+if (!process.env.OPENROUTER_API_KEY) {
+    console.error(
+        'Erro: variável OPENROUTER_API_KEY não foi configurada.'
+    );
+    process.exit(1);
+}
+
 const allowedOrigins = [
     'http://localhost:5173',
     process.env.CLIENT_URL,
@@ -34,8 +41,13 @@ app.use(cors({
 app.use(express.json());
 
 const openai = new OpenAI({
+    baseURL: 'https://openrouter.ai/api/v1',
     apiKey:
         process.env.OPENROUTER_API_KEY,
+    defaultHeaders: {
+        'HTTP-Referer': 'https://ia-front-one.vercel.app',
+        'X-Title': 'Chat AI',
+    },
 });
 
 app.get('/health', (req, res) => {
@@ -55,7 +67,7 @@ app.post('/chat', async (req, res) => {
         const completion =
             await openai.chat.completions.create({
                 model:
-                    'openai/gpt-3.5-turbo',
+                    'meta-llama/llama-3.1-8b-instruct:free',
                 messages: [
                     {
                         role: 'user',
@@ -74,10 +86,15 @@ app.post('/chat', async (req, res) => {
                     .message.content,
         });
     } catch (error) {
-        console.log(
-            'ERRO COMPLETO:',
-            error
-        );
+        console.error('Erro ao consultar OpenRouter:', {
+            status: error.status,
+            code: error.code,
+            type: error.type,
+            message: error.message,
+            responseError:
+                error.error || error.response?.data,
+        });
+
         res.status(500).json({
             error:
                 'Erro ao consultar a IA',
