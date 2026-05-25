@@ -9,7 +9,7 @@ const app = express();
 const port = process.env.PORT || 5001;
 const host = '0.0.0.0';
 const openRouterBaseURL = 'https://openrouter.ai/api/v1';
-const chatModel = 'deepseek/deepseek-chat-v3-0324:free';
+const chatModel = 'openrouter/owl-alpha';
 const clientURL = (
     process.env.CLIENT_URL || 'https://ia-front-one.vercel.app'
 )
