@@ -10,7 +10,7 @@ const port = process.env.PORT || 5001;
 const host = '0.0.0.0';
 
 app.use(cors({
-    origin: ['http://localhost:5173'],
+    origin: ['http://localhost:5173'], //esse origin ai vai ser a url do projeto na vercel
     methods: ['GET', 'POST'],
     allowedHeaders: ['Content-Type'],
 }));
