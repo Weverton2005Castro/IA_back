@@ -8,6 +8,11 @@ dotenv.config();
 const app = express();
 const port = process.env.PORT || 5001;
 const host = '0.0.0.0';
+const openRouterBaseURL = 'https://openrouter.ai/api/v1';
+const chatModel = 'deepseek/deepseek-chat-v3-0324:free';
+const clientURL = (
+    process.env.CLIENT_URL || 'https://ia-front-one.vercel.app'
+)
 
 if (!process.env.OPENROUTER_API_KEY) {
     console.error(
@@ -18,7 +23,7 @@ if (!process.env.OPENROUTER_API_KEY) {
 
 const allowedOrigins = [
     'http://localhost:5173',
-    process.env.CLIENT_URL,
+    clientURL,
 ]
     .filter(Boolean)
     .map((origin) =>
@@ -41,14 +46,31 @@ app.use(cors({
 app.use(express.json());
 
 const openai = new OpenAI({
-    baseURL: 'https://openrouter.ai/api/v1',
+    baseURL: openRouterBaseURL,
     apiKey:
         process.env.OPENROUTER_API_KEY,
     defaultHeaders: {
-        'HTTP-Referer': 'https://ia-front-one.vercel.app',
+        'HTTP-Referer': clientURL,
         'X-Title': 'Chat AI',
     },
 });
+
+function getProviderError(error) {
+    const encodedError =
+        error.headers?.['x-error-json'];
+
+    if (encodedError) {
+        try {
+            return JSON.parse(
+                Buffer.from(encodedError, 'base64').toString('utf8')
+            );
+        } catch {
+            return encodedError;
+        }
+    }
+
+    return error.error || error.response?.data;
+}
 
 app.get('/health', (req, res) => {
     res.json({
@@ -67,7 +89,7 @@ app.post('/chat', async (req, res) => {
         const completion =
             await openai.chat.completions.create({
                 model:
-                    'meta-llama/llama-3.1-8b-instruct:free',
+                    chatModel,
                 messages: [
                     {
                         role: 'user',
@@ -92,7 +114,7 @@ app.post('/chat', async (req, res) => {
             type: error.type,
             message: error.message,
             responseError:
-                error.error || error.response?.data,
+                getProviderError(error),
         });
 
         res.status(500).json({
@@ -106,6 +128,13 @@ const server = app.listen(port, host, () => {
     console.log(
         `Servidor rodando em http://${host}:${port}`
     );
+    console.log('OpenRouter configurado:', {
+        baseURL: openRouterBaseURL,
+        model: chatModel,
+        clientURL,
+        apiKeyLoaded:
+            process.env.OPENROUTER_API_KEY.startsWith('sk-or-v1-'),
+    });
 });
 
 server.on('error', (error) => {
